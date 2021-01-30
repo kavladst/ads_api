@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "ads"
+    restart: always
+    ports:
+      - 5432
+    volumes:
+      - ./sql_scripts/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CONFIG_FILE_PATH: "../../../../config/"
+    entrypoint: >
+      sh -c "CGO_ENABLED=0 go test ./..."
+    restart: on-failure
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
